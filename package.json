@@ -1,0 +1,25 @@
+{
+  "name": "employee-cms-sql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chenallee/employee-cms-sql.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chenallee/employee-cms-sql/issues"
+  },
+  "homepage": "https://github.com/chenallee/employee-cms-sql#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "inquirer": "^7.0.4",
+    "mysql": "^2.18.1",
+    "table": "^5.4.6"
+  }
+}
