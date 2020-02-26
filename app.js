@@ -67,7 +67,7 @@ const viewEmpMenu = async() => {
     const allEmps = await viewAllEmp();
     console.table(allEmps);
   } else if (empViewSelect === 'View by Role'){
-    const rolesEmp =
+    console.log('roles');
   }
 
 };
