@@ -31,37 +31,5 @@ VALUES
     (first_name, last_name, role_id, manager_id)
   VALUES
     ('Kramcia', 'Firerong', 2, 1),
-    ('Waradrin', 'Magicwalker', 4, 3),
-    ('Shazora', 'Bradleflame', 7, 6);
-
-
---SELECT 
-	--employees.id, employees.first_name, employees.last_name, role.title, concat(employees.first_name, ' ', employees.last_name) AS manager
---FROM employees
---INNER JOIN 
-	--role
---ON 
-	--employees.role_id = role.id
---LEFT JOIN
-	--employees AS employee
---ON
-	--employees.manager_id = employee.id
---;
-
--- SEPARATED ------------------------------------------------------------------------
-
--- SELECT 
-	-- employees.id, employees.first_name, employees.last_name, role.title
--- FROM employees
--- INNER JOIN 
-	-- role
--- ON 
-	-- employees.role_id = role.id;
-
--- SELECT concat(employees.first_name, ' ', employees.last_name) AS manager
--- FROM 
-	-- employees
--- LEFT JOIN
-	-- employees AS employee
--- ON
-	-- employees.manager_id = employee.id;
+    ('Waradrin', 'Magicwalker', 4, 2),
+    ('Shazora', 'Bradleflame', 7, 4);
