@@ -6,12 +6,14 @@ require('console.table');
 const connection = require('./config/connection');
 
 //import functions to work with database
-const { viewAllEmp, getEmpRoles, queryEmpRole } = require('./lib/db-query');
+const { viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
-const { employeesPrompt, empViewOptions, renderEmpRolesList, empRoleSelect } = require('./lib/employee-prompt');
+const { employeesPrompt, empViewOptions, renderEmpRolesList, renderManagerList } = require('./lib/employee-prompt');
 
+// ====================================================================================================================================================================================
+//   functions
 // ====================================================================================================================================================================================
 
 //welcome user with initial screen
@@ -37,45 +39,55 @@ const entryPrompt = async () => {
   }
   ;
 }
+// ====================================================================================================================================================================================
+// User has selected the Employees menu:
 
-//call Employees prompt which asks user if they want to View/Update/Add/Delete
-//if View call View menu
-//View menu asks if user wants to View All E / View E by Role / View E by Manager/ (View E by Dpt)
-//if Update call Update menu
-//Update menu asks if user wants to Update Role / Update Manager
-//if Add call Add E prompts (name/surname/role from list/manager from list)*
-//if Delete call Delete E prompts
+//     call Employees prompt which asks user if they want to View/Update/Add/Delete
+//     if View call View menu
+//     if Update call Update menu
+//     if Add call Add E prompts (name/surname/role from list/manager from list)*
+//     if Delete call Delete E prompts
+
 const employeesMenu = async () => {
   //console.log('employees');
   const { employees_menu: employeesAction } = await inquirer.prompt(employeesPrompt);
 
-  if (employeesAction === 'View Employees') {
+  if (employeesAction === 'View Employees') { //          View menu asks if user wants to View All E / View E by Role / View E by Manager/ (View E by Dpt)
     viewEmpMenu();
-  } else if (employeesAction === 'Update Employee') {
+  } else if (employeesAction === 'Update Employee') { //          Update menu asks if user wants to Update Role / Update Manager
     updateEmpMenu();
-  } else if (employeesAction === 'Add Employee') {
+  } else if (employeesAction === 'Add Employee') { //     if Add call Add E prompts (name/surname/role from list/manager from list)*
     addEmpMenu();
-  } else if (employeesAction === 'Delete Employee') {
+  } else if (employeesAction === 'Delete Employee') { //     if Delete call Delete E prompts
     delEmpMenu();
   }
 };
 
-//View menu asks if user wants to View All E / View E by Role / View E by Manager/ (View E by Dpt)
+// ====================================================================================================================================================================================
+// User has selected to view employees:
+//     user selects to view all / view by role / view by manager
+
 const viewEmpMenu = async () => {
-  console.log('view');
+
+  // ask user to select how they want to view employees
   const { employees_view: empViewSelect } = await inquirer.prompt(empViewOptions);
 
+  // View All:
   if (empViewSelect === 'View All') {
 
+    //query DB to get all necessary employee data
     const allEmps = await viewAllEmp();
     console.table(allEmps);
 
+    // View by Role
   } else if (empViewSelect === 'View by Role') {
-    console.log('roles');
 
+    //query DB to get list of all roles
     const rolesRes = await getEmpRoles();
+    //format response in a nice array to pass into choices
     const rolesList = await renderEmpRolesList(rolesRes);
 
+    //this would make more sense in renderEmpRolesList but i was having issues bringing it over from there 
     let rolesQ =
       [
         {
@@ -91,12 +103,37 @@ const viewEmpMenu = async () => {
     //console.log(selectedRole);
 
     //get employees by role selected -> db query
-    const ebyRole = await queryEmpRole(selectedRole);
-    console.table(ebyRole);
-  } else if (empViewSelect === 'View by Manager'){
-    
-  }
+    const empsByRole = await queryEmpRole(selectedRole);
+    console.table(empsByRole);
 
+  } else if (empViewSelect === 'View by Manager') {
+
+    //query DB to get manager list
+    const managerRes = await getManagers();
+    //console.log(managerRes);
+    //format response in a nice array to pass into choices
+    const managersList = await renderManagerList(managerRes);
+    //console.log(managersList);
+
+    let managersQ =
+      [
+        {
+          name: 'selected_manager',
+          message: 'Search by: ',
+          type: 'list',
+          choices: managersList
+          //default: 1
+        }
+      ]
+
+    //console.log(managersQ)
+    const { selected_manager: selectedManager } = await inquirer.prompt(managersQ);
+
+    //get employees by manager selected -> db query
+    const empsByManager= await queryEmpManager(selectedManager);
+    console.table(empsByManager);
+
+  }
 };
 
 
