@@ -5,16 +5,17 @@ require('console.table');
 //import connection
 const connection = require('./config/connection');
 
-//
-const { viewAllEmp } = require('./lib/db-query');
+//import functions to work with database
+const { viewAllEmp, getEmpRoles, queryEmpRole } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
-const { employeesPrompt, empViewOptions } = require('./lib/employee-prompt');
+const { employeesPrompt, empViewOptions, renderEmpRolesList, empRoleSelect } = require('./lib/employee-prompt');
 
+// ====================================================================================================================================================================================
 
 //welcome user with initial screen
-  //call entry prompt function
+//call entry prompt function
 
 /*entry prompt function:
   Have user select if they want to interact with Employees / Roles / Departments
@@ -25,69 +26,98 @@ const entryPrompt = async () => {
 
   const { selected_menu: menuSelect } = await inquirer.prompt(menuPrompt);
 
-  if (menuSelect === 'Employees'){
+  if (menuSelect === 'Employees') {
     employeesMenu();
-  } else if (menuSelect === 'Roles'){
+  } else if (menuSelect === 'Roles') {
     rolesMenu();
-  } else if (menuSelect === 'Departments'){
+  } else if (menuSelect === 'Departments') {
     departmentsMenu();
   } else {
     connection.end();
   }
-;}
+  ;
+}
 
 //call Employees prompt which asks user if they want to View/Update/Add/Delete
-  //if View call View menu
-    //View menu asks if user wants to View All E / View E by Role / View E by Manager/ (View E by Dpt)
-  //if Update call Update menu
-    //Update menu asks if user wants to Update Role / Update Manager
-  //if Add call Add E prompts (name/surname/role from list/manager from list)*
-  //if Delete call Delete E prompts
+//if View call View menu
+//View menu asks if user wants to View All E / View E by Role / View E by Manager/ (View E by Dpt)
+//if Update call Update menu
+//Update menu asks if user wants to Update Role / Update Manager
+//if Add call Add E prompts (name/surname/role from list/manager from list)*
+//if Delete call Delete E prompts
 const employeesMenu = async () => {
   //console.log('employees');
   const { employees_menu: employeesAction } = await inquirer.prompt(employeesPrompt);
 
-  if (employeesAction === 'View Employees'){
+  if (employeesAction === 'View Employees') {
     viewEmpMenu();
-  } else if (employeesAction === 'Update Employee'){
+  } else if (employeesAction === 'Update Employee') {
     updateEmpMenu();
-  } else if (employeesAction === 'Add Employee'){
+  } else if (employeesAction === 'Add Employee') {
     addEmpMenu();
-  } else if (employeesAction === 'Delete Employee'){
+  } else if (employeesAction === 'Delete Employee') {
     delEmpMenu();
   }
 };
 
 //View menu asks if user wants to View All E / View E by Role / View E by Manager/ (View E by Dpt)
-const viewEmpMenu = async() => {
+const viewEmpMenu = async () => {
   console.log('view');
   const { employees_view: empViewSelect } = await inquirer.prompt(empViewOptions);
 
-  if (empViewSelect === 'View All'){
+  if (empViewSelect === 'View All') {
+
     const allEmps = await viewAllEmp();
     console.table(allEmps);
-  } else if (empViewSelect === 'View by Role'){
+
+  } else if (empViewSelect === 'View by Role') {
     console.log('roles');
+
+    const rolesRes = await getEmpRoles();
+    const rolesList = await renderEmpRolesList(rolesRes);
+
+    let rolesQ =
+      [
+        {
+          name: 'selected_role',
+          message: 'Search by: ',
+          type: 'list',
+          choices: rolesList
+          //default: 'Lawyer'
+        }
+      ]
+
+    const { selected_role: selectedRole } = await inquirer.prompt(rolesQ);
+    //console.log(selectedRole);
+
+    //get employees by role selected -> db query
+    const ebyRole = await queryEmpRole(selectedRole);
+    console.table(ebyRole);
+  } else if (empViewSelect === 'View by Manager'){
+    
   }
 
 };
 
+
+
+
 //call Roles prompt which asks user if they want to View role/Add role/Delete role
-  // if View -> show all roles -> call Entry Prompt
-  // if Add call Add R prompts (title/salary/department from list)
-  //if Delete call Delete R prompts (list)
+// if View -> show all roles -> call Entry Prompt
+// if Add call Add R prompts (title/salary/department from list)
+//if Delete call Delete R prompts (list)
 
 //call Departments prompt which asks user if they want to View Departments/View Department Budget/Add Dpt/Delete Dpt
-  //if View -> show all dpts -> call Entry Prompt
-  // if View Budget -> prompt to Select Dpt from List -> show budget
-  // if Add call Add D prompts (name)
-  // if Delete call Delete R prompts (list)
+//if View -> show all dpts -> call Entry Prompt
+// if View Budget -> prompt to Select Dpt from List -> show budget
+// if Add call Add D prompts (name)
+// if Delete call Delete R prompts (list)
 
 
-
+// ====================================================================================================================================================================================
 //connect to the database
 connection.connect(err => {
   if (err) throw err;
-  console.log('connected to DB');
+  //console.log('connected to DB');
   entryPrompt();
-})
+});
