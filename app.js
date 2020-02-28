@@ -6,11 +6,12 @@ require('console.table');
 const connection = require('./config/connection');
 
 //import functions to work with database
-const { viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager } = require('./lib/db-query');
+const { viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
-const { employeesPrompt, empViewOptions, renderEmpRolesList, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
+const { employeesPrompt, empViewOptions, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
+const { renderRolesList } = require('./lib/role-prompt');
 
 // ====================================================================================================================================================================================
 //   functions
@@ -41,7 +42,7 @@ const entryPrompt = async () => {
 }
 // ====================================================================================================================================================================================
 // User has selected the Employees menu:
-
+// *************************************===============================================================================================================================================
 //     call Employees prompt which asks user if they want to View/Update/Add/Delete
 //     if View call View menu
 //     if Update call Update menu
@@ -88,9 +89,9 @@ const viewEmpMenu = async () => {
     //query DB to get list of all roles
     const rolesRes = await getEmpRoles();
     //format response in a nice array to pass into choices
-    const rolesList = await renderEmpRolesList(rolesRes);
+    const rolesList = await renderRolesList(rolesRes);
 
-    //this would make more sense in renderEmpRolesList but i was having issues bringing it over from there 
+    //this would make more sense in renderRolesList but i was having issues bringing it over from there 
     let rolesQ =
       [
         {
@@ -178,7 +179,7 @@ const updateEmpMenu = async () => {
     //query DB to get list of all roles
     const rolesRes = await getEmpRoles();
     //format response in a nice array to pass into choices
-    const rolesList = await renderEmpRolesList(rolesRes);
+    const rolesList = await renderRolesList(rolesRes);
     console.log(rolesList);
 
     //prompt user to select role
@@ -200,7 +201,7 @@ const updateEmpMenu = async () => {
     const updatedEmp = await updateEmpRole(newRole, selectedEmp);
 
     console.log(`Updated!`)
-    // entryPrompt();
+    entryPrompt();
   } else if (selectedEmpUpdate === 'Manager') {
     //if manager user selects manager to assign from ALL employees
     // choices of concat employee names + id - get emp short
@@ -221,15 +222,70 @@ const updateEmpMenu = async () => {
     const updatedEmp = await updateEmpManager(newManager, selectedEmp);
 
     console.log(`Updated!`)
+    entryPrompt();
   }
 }
 
+// ====================================================================================================================================================================================
+// User has selected to add employee:
+const addEmpMenu = async () => {
+  //get roles:
+  const rolesRes = await getEmpRoles(); //query DB to get list of all roles
+  const rolesList = await renderRolesList(rolesRes);   //format response in a nice array
+  //get managers
+  const empsRes = await getEmpShort();
+  const empsList = await renderEmpsList(empsRes);
 
+  const addEmpQ = [
+    {
+      name: 'first_name',
+      message: 'Enter first name: ',
+      type: 'input',
+      //validate
+    },
+    {
+      name: 'last_name',
+      message: 'Enter last name: ',
+      type: 'input',
+      //validate
+    },
+    {
+      name: 'role_id',
+      message: `Select employee's role: `,
+      type: 'list',
+      choices: rolesList
+    },
+    {
+      name: 'manager_id',
+      message: `Select employee's manager: `,
+      type: 'list',
+      choices: empsList
+    }
+  ]
+
+  const newEmpData = await inquirer.prompt(addEmpQ);
+  //console.log(newEmpData);
+  addNewEmp(newEmpData);
+  console.log('added!');
+  entryPrompt();
+}
+
+// ====================================================================================================================================================================================
+// User has selected to delete employee:
+const delEmpMenu = async () => {
+
+}
+
+// ====================================================================================================================================================================================
+// User has selected Roles menu
+// *************************************===============================================================================================================================================
 
 //call Roles prompt which asks user if they want to View role/Add role/Delete role
 // if View -> show all roles -> call Entry Prompt
 // if Add call Add R prompts (title/salary/department from list)
 //if Delete call Delete R prompts (list)
+
+
 
 //call Departments prompt which asks user if they want to View Departments/View Department Budget/Add Dpt/Delete Dpt
 //if View -> show all dpts -> call Entry Prompt
