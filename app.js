@@ -6,7 +6,9 @@ require('console.table');
 const connection = require('./config/connection');
 
 //import functions to work with database
-const { viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp } = require('./lib/db-query');
+const { 
+  viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp 
+} = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
@@ -241,13 +243,13 @@ const addEmpMenu = async () => {
       name: 'first_name',
       message: 'Enter first name: ',
       type: 'input',
-      //validate
+      validate: inputVal => (inputVal ? true: false)
     },
     {
       name: 'last_name',
       message: 'Enter last name: ',
       type: 'input',
-      //validate
+      validate: inputVal => (inputVal ? true: false)
     },
     {
       name: 'role_id',
@@ -273,7 +275,26 @@ const addEmpMenu = async () => {
 // ====================================================================================================================================================================================
 // User has selected to delete employee:
 const delEmpMenu = async () => {
+  //ask user to select an employee to delete from the list:
+  const empsRes = await getEmpShort();
+  const empsList = await renderEmpsList(empsRes);
 
+  const delEmpQ = [
+    {
+      name: 'id',
+      message: 'Select which employee to delete: ',
+      type: 'list',
+      choices: empsList
+    }
+  ]
+
+  let { id: delEmp } = await inquirer.prompt(delEmpQ);
+  //console.log(delEmp);
+
+  deleteEmp(delEmp);
+  
+  console.log('Deleted!');
+  entryPrompt();
 }
 
 // ====================================================================================================================================================================================
