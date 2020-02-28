@@ -6,11 +6,11 @@ require('console.table');
 const connection = require('./config/connection');
 
 //import functions to work with database
-const { viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager } = require('./lib/db-query');
+const { viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
-const { employeesPrompt, empViewOptions, renderEmpRolesList, renderManagerList } = require('./lib/employee-prompt');
+const { employeesPrompt, empViewOptions, renderEmpRolesList, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
 
 // ====================================================================================================================================================================================
 //   functions
@@ -79,6 +79,9 @@ const viewEmpMenu = async () => {
     const allEmps = await viewAllEmp();
     console.table(allEmps);
 
+    //return to menu
+    employeesMenu();
+
     // View by Role
   } else if (empViewSelect === 'View by Role') {
 
@@ -104,7 +107,11 @@ const viewEmpMenu = async () => {
 
     //get employees by role selected -> db query
     const empsByRole = await queryEmpRole(selectedRole);
+
     console.table(empsByRole);
+
+    //return to menu
+    employeesMenu();
 
   } else if (empViewSelect === 'View by Manager') {
 
@@ -130,12 +137,92 @@ const viewEmpMenu = async () => {
     const { selected_manager: selectedManager } = await inquirer.prompt(managersQ);
 
     //get employees by manager selected -> db query
-    const empsByManager= await queryEmpManager(selectedManager);
+    const empsByManager = await queryEmpManager(selectedManager);
     console.table(empsByManager);
 
+    //return to menu
+    employeesMenu();
   }
 };
 
+// ====================================================================================================================================================================================
+// User has selected to update employees:
+//     user selects which employee to update
+const updateEmpMenu = async () => {
+  // user selects from choices of concat employee names (+ id)
+  const empsRes = await getEmpShort();
+  const empsList = await renderEmpsList(empsRes);
+  //console.log(empsList);
+  let empNamesQ =
+    [
+      {
+        name: 'selected_emp',
+        message: 'Select an Employee: ',
+        type: 'list',
+        choices: empsList
+        //default: ''
+      }
+    ]
+  //console.log(empNamesQ);
+  const { selected_emp: selectedEmp } = await inquirer.prompt(empNamesQ);
+
+  //console.log(selectedEmp);
+
+  //ask user to update role or manager & pass thru empUpdateId
+  const { update_select: selectedEmpUpdate } = await inquirer.prompt(updateEmpQ);
+
+
+  if (selectedEmpUpdate === 'Role') {
+    //if role ... user selects from choices of roles
+    //get emp roles
+    //query DB to get list of all roles
+    const rolesRes = await getEmpRoles();
+    //format response in a nice array to pass into choices
+    const rolesList = await renderEmpRolesList(rolesRes);
+    console.log(rolesList);
+
+    //prompt user to select role
+    let rolesQ =
+      [
+        {
+          name: 'selected_role',
+          message: 'Select new Role: ',
+          type: 'list',
+          choices: rolesList
+        }
+      ]
+
+    const { selected_role: newRole } = await inquirer.prompt(rolesQ);
+
+    console.log(newRole);
+
+    //UPDATE 'employees' set 'role_id' to role.id where id = selectedEmp.id
+    const updatedEmp = await updateEmpRole(newRole, selectedEmp);
+
+    console.log(`Updated!`)
+    // entryPrompt();
+  } else if (selectedEmpUpdate === 'Manager') {
+    //if manager user selects manager to assign from ALL employees
+    // choices of concat employee names + id - get emp short
+
+    let empNamesQ =
+      [
+        {
+          name: 'selected_emp',
+          message: 'Select new Manager: ',
+          type: 'list',
+          choices: empsList
+          //default: ''
+        }
+      ]
+
+    const { selected_emp: newManager } = await inquirer.prompt(empNamesQ);
+
+    const updatedEmp = await updateEmpManager(newManager, selectedEmp);
+
+    console.log(`Updated!`)
+  }
+}
 
 
 
