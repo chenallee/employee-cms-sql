@@ -9,14 +9,14 @@ const connection = require('./config/connection');
 const { 
   viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp,
   getRolesTable, addNewRole, deleteRole,
-  getDepts, getDeptSalaries, deleteDept
+  getDepts, getDeptSalaries, deleteDept, addNewDept
 } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
 const { employeesPrompt, empViewOptions, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
 const { renderRolesList, rolesPrompt } = require('./lib/role-prompt');
-const { renderDeptsList,  deptsPrompt } = require('./lib/department-prompt');
+const { renderDeptsList,  deptsPrompt, addDeptQ } = require('./lib/department-prompt');
 
 // ====================================================================================================================================================================================
 //   functions
@@ -466,6 +466,12 @@ const viewBudget = async () => {
 // User has selected to add department:
 const addDeptMenu = async () => {
 
+  const newDeptData = await inquirer.prompt(addDeptQ);
+
+  addNewDept(newDeptData);
+  console.log('Added!');
+
+  return entryPrompt();
 }
 
 const delDeptMenu = async () => {
