@@ -8,7 +8,7 @@ const connection = require('./config/connection');
 //import functions to work with database
 const { 
   viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp,
-  getRolesTable, addNewRole,
+  getRolesTable, addNewRole, deleteRole,
   getDepts
 } = require('./lib/db-query');
 
@@ -375,6 +375,28 @@ return entryPrompt();
 // ====================================================================================================================================================================================
 // User has selected to delete role:
 const delRoleMenu = async () => {
+    //get roles (we don't need all the data so let's use this one:) --> if there's time make a more general query SELECT ? from ROLES and etc
+    const rolesRes = await getEmpRoles(); //query DB to get list of all roles
+    const rolesList = await renderRolesList(rolesRes);   //format response in a nice array
+
+    const delRoleQ = [
+      {
+        name: 'id',
+        message: 'Select which role to delete: ',
+        type: 'list',
+        choices: rolesList
+      }
+    ]
+
+    let { id: delRole } = await inquirer.prompt(delRoleQ);
+  //console.log(delEmp);
+
+  delRole = 9;
+
+  deleteRole(delRole);
+
+  console.log('Deleted!');
+  entryPrompt();
 
 }
 
