@@ -9,7 +9,7 @@ const connection = require('./config/connection');
 const { 
   viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp,
   getRolesTable, addNewRole, deleteRole,
-  getDepts, getDeptSalaries
+  getDepts, getDeptSalaries, deleteDept
 } = require('./lib/db-query');
 
 //import questions
@@ -416,13 +416,15 @@ const departmentsMenu = async () => {
     viewDepts();
   } else if (deptsAction === 'View Budget'){
     viewBudget();
-  } else if (rolesAction === 'Add Department') { //     if Add call Add R prompts (input Title/select Dpt)
+  } else if (deptsAction === 'Add Department') { //     if Add call Add R prompts (input Title/select Dpt)
     addDeptMenu();
-  } else if (rolesAction === 'Delete Department') { //     if Delete call Delete R prompts
+  } else if (deptsAction === 'Delete Department') { //     if Delete call Delete R prompts
     delDeptMenu();
   }
 }
 
+// ====================================================================================================================================================================================
+// User has selected to view departments:
 const viewDepts = async () => {
     //get dept id / name
     const deptsRes = await getDepts();
@@ -431,6 +433,8 @@ const viewDepts = async () => {
     return entryPrompt();
 }
 
+// ====================================================================================================================================================================================
+// User has selected to view department's budget:
 const viewBudget = async () => {
   const deptsRes = await getDepts();
   //console.table(deptsRes); 
@@ -457,6 +461,37 @@ const viewBudget = async () => {
 
   console.log(`Departmental budget: ${deptBudget}`);
 }
+
+// ====================================================================================================================================================================================
+// User has selected to add department:
+const addDeptMenu = async () => {
+
+}
+
+const delDeptMenu = async () => {
+  const deptsRes = await getDepts();
+  //console.table(deptsRes); 
+  const deptsList = await renderDeptsList(deptsRes);
+
+  const delDeptQ = [
+    {
+      name: 'id',
+      message: `Select which Department to delete: `,
+      type: 'list',
+      choices: deptsList
+    }
+  ]
+
+  let { id: delDept } = await inquirer.prompt(delDeptQ);
+  delDept = 5;
+
+  console.log(delDept);
+
+  deleteDept(delDept);
+  console.log('Deleted!');
+
+  return entryPrompt();
+} 
 
 // ====================================================================================================================================================================================
 //connect to the database
