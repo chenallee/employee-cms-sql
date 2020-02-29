@@ -7,13 +7,14 @@ const connection = require('./config/connection');
 
 //import functions to work with database
 const { 
-  viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp 
+  viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp,
+  getRolesTable 
 } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
 const { employeesPrompt, empViewOptions, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
-const { renderRolesList } = require('./lib/role-prompt');
+const { renderRolesList, rolesPrompt } = require('./lib/role-prompt');
 
 // ====================================================================================================================================================================================
 //   functions
@@ -83,7 +84,7 @@ const viewEmpMenu = async () => {
     console.table(allEmps);
 
     //return to menu
-    employeesMenu();
+    entryPrompt();
 
     // View by Role
   } else if (empViewSelect === 'View by Role') {
@@ -114,7 +115,7 @@ const viewEmpMenu = async () => {
     console.table(empsByRole);
 
     //return to menu
-    employeesMenu();
+    entryPrompt();
 
   } else if (empViewSelect === 'View by Manager') {
 
@@ -144,7 +145,7 @@ const viewEmpMenu = async () => {
     console.table(empsByManager);
 
     //return to menu
-    employeesMenu();
+    entryPrompt();
   }
 };
 
@@ -292,7 +293,7 @@ const delEmpMenu = async () => {
   //console.log(delEmp);
 
   deleteEmp(delEmp);
-  
+
   console.log('Deleted!');
   entryPrompt();
 }
@@ -305,8 +306,44 @@ const delEmpMenu = async () => {
 // if View -> show all roles -> call Entry Prompt
 // if Add call Add R prompts (title/salary/department from list)
 //if Delete call Delete R prompts (list)
+const rolesMenu = async () => {
+  const { roles_menu: rolesAction } = await inquirer.prompt(rolesPrompt);
 
+  if (rolesAction === 'View Roles') { // Display ID / Title / Salary / Dpt name
+    viewRoles();
+  } else if (rolesAction === 'Add Role') { //     if Add call Add R prompts (input Title/select Dpt)
+    addRoleMenu();
+  } else if (rolesAction === 'Delete Role') { //     if Delete call Delete R prompts
+    delRoleMenu();
+  }
+}
 
+// ====================================================================================================================================================================================
+// User has selected to view roles:
+const viewRoles = async () => {
+    //query DB to get all necessary role data
+    const fullRoles = await getRolesTable();
+    console.table(fullRoles);
+
+    //return to menu
+    entryPrompt();
+}
+
+// ====================================================================================================================================================================================
+// User has selected to add role:
+const addRoleMenu = async () => {
+
+}
+
+// ====================================================================================================================================================================================
+// User has selected to delete role:
+const delRoleMenu = async () => {
+
+}
+
+// ====================================================================================================================================================================================
+// User has selected Departments menu
+// *************************************===============================================================================================================================================
 
 //call Departments prompt which asks user if they want to View Departments/View Department Budget/Add Dpt/Delete Dpt
 //if View -> show all dpts -> call Entry Prompt
