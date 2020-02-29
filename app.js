@@ -8,13 +8,15 @@ const connection = require('./config/connection');
 //import functions to work with database
 const { 
   viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp,
-  getRolesTable 
+  getRolesTable, addNewRole,
+  getDepts
 } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
 const { employeesPrompt, empViewOptions, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
 const { renderRolesList, rolesPrompt } = require('./lib/role-prompt');
+const { renderDeptsList } = require('./lib/department-prompt');
 
 // ====================================================================================================================================================================================
 //   functions
@@ -326,14 +328,49 @@ const viewRoles = async () => {
     console.table(fullRoles);
 
     //return to menu
-    entryPrompt();
+    return entryPrompt();
 }
 
 // ====================================================================================================================================================================================
 // User has selected to add role:
 const addRoleMenu = async () => {
+  //get dept id / name
+  const deptsRes = await getDepts();
+  //console.table(deptsRes); 
+  const deptsList = await renderDeptsList(deptsRes);
+  //console.log(deptsList);
 
+  const addRoleQ = [
+    {
+      name: 'title',
+      message: 'Enter title of new role: ',
+      type: 'input',
+      validate: inputVal => (inputVal ? true: false)
+    },
+    {
+      name: 'salary',
+      message: 'What is the salary for this role? ',
+      type: 'input',
+      validate: inputVal => {
+        return inputVal > 0 && !isNaN(inputVal) ? true : false;
+      }
+    },
+    {
+      name: 'department_id',
+      message: 'Which department does this role belong to? ',
+      type: 'list',
+      choices: deptsList
+    }
+  ]
+  
+const newRoleData = await inquirer.prompt(addRoleQ);
+
+//console.log (newRoleData);
+addNewRole(newRoleData);
+
+return entryPrompt();
 }
+
 
 // ====================================================================================================================================================================================
 // User has selected to delete role:
