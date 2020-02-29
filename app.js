@@ -9,14 +9,14 @@ const connection = require('./config/connection');
 const { 
   viewAllEmp, getEmpRoles, queryEmpRole, getManagers, queryEmpManager, getEmpShort, updateEmpRole, updateEmpManager, addNewEmp, deleteEmp,
   getRolesTable, addNewRole, deleteRole,
-  getDepts
+  getDepts, getDeptSalaries
 } = require('./lib/db-query');
 
 //import questions
 const menuPrompt = require('./lib/prompt');
 const { employeesPrompt, empViewOptions, renderManagerList, renderEmpsList, updateEmpQ } = require('./lib/employee-prompt');
 const { renderRolesList, rolesPrompt } = require('./lib/role-prompt');
-const { renderDeptsList } = require('./lib/department-prompt');
+const { renderDeptsList,  deptsPrompt } = require('./lib/department-prompt');
 
 // ====================================================================================================================================================================================
 //   functions
@@ -409,7 +409,27 @@ const delRoleMenu = async () => {
 // if View Budget -> prompt to Select Dpt from List -> show budget
 // if Add call Add D prompts (name)
 // if Delete call Delete R prompts (list)
+const departmentsMenu = async () => {
+  const { depts_menu: deptsAction } = await inquirer.prompt(deptsPrompt);
 
+  if (deptsAction === 'View Departments') { // Display ID / Title / Salary / Dpt name
+    viewDepts();
+  } else if (deptsAction === 'View Budget'){
+    viewBudget();
+  } else if (rolesAction === 'Add Department') { //     if Add call Add R prompts (input Title/select Dpt)
+    addDeptMenu();
+  } else if (rolesAction === 'Delete Department') { //     if Delete call Delete R prompts
+    delDeptMenu();
+  }
+}
+
+const viewDepts = async () => {
+    //get dept id / name
+    const deptsRes = await getDepts();
+    console.table(deptsRes);
+    
+    return entryPrompt();
+}
 
 // ====================================================================================================================================================================================
 //connect to the database
