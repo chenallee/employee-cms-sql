@@ -431,6 +431,33 @@ const viewDepts = async () => {
     return entryPrompt();
 }
 
+const viewBudget = async () => {
+  const deptsRes = await getDepts();
+  //console.table(deptsRes); 
+  const deptsList = await renderDeptsList(deptsRes);
+
+  const viewBudgetQ = [
+    {
+      name: 'id',
+      message: `Select which Department's budget to view: `,
+      type: 'list',
+      choices: deptsList
+    }
+  ]
+
+  const { id : deptSelected } = await inquirer.prompt(viewBudgetQ);
+
+  const deptSalaries = await getDeptSalaries(deptSelected);
+
+  let deptBudget = 0;
+
+  deptSalaries.forEach(employee => {
+    deptBudget = deptBudget + parseFloat(employee.salary);
+  });
+
+  console.log(`Departmental budget: ${deptBudget}`);
+}
+
 // ====================================================================================================================================================================================
 //connect to the database
 connection.connect(err => {
